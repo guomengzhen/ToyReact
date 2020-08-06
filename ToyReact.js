@@ -1,6 +1,6 @@
 class ElementWrapper{
     constructor(type){
-        this.root = document.createElement(type)
+        this.root = document.createElement(type)  // 创建的实Dom
     }
     setAttribute(name,value){
         if( name.match(/^on([\s\S]+)$/) ){  // 处理事件
@@ -71,16 +71,22 @@ export class Component{    // 公共方法
     setState(state){
         let merge = (oldState,newState) => {
             for (let p in newState) { 
-                if(typeof newState[p] === 'object'){ //复杂数据类型更新需要递归处理
+                if (typeof newState[p] === 'object' && newState[p] !== null){ //复杂数据类型更新需要递归处理
                     if (typeof oldState[p] !== 'object'){ // oldState 不是对象，在递归调用前让它是对象，不然报错
-                        oldState[p] = {}
+                        if (newState[p] instanceof Array){
+                            oldState[p] = []
+                        }else{
+                            oldState[p] = {}
+                        };
+                        
                     }
                     merge(oldState[p], newState[p])
                 }else{
                     oldState[p] = newState[p]
-                }
-            }
-        }
+                };
+            };
+        };
+
         if(!this.state && state){
             this.state = {}
         }
@@ -105,14 +111,15 @@ export let ToyReact = {
                 if(typeof child === "object" && child instanceof Array){  // 递归处理
                     insertChildren(child)
                 }else{
+                    if(child=== null || child === void 0){ child = "" };
                     if (!(child instanceof Component) 
                         && !(child instanceof ElementWrapper) 
                         && !(child instanceof TextWrapper)  ){  // 不是这三个类型就强转为string
                         child = String(child);
-                    }
+                    };
                     if (typeof child === "string") {  // 如果该元素是文本
                         child = new TextWrapper(child);
-                    }
+                    };
                     element.appendChild(child);
                 }
                 
